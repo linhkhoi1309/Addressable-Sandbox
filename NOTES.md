@@ -919,3 +919,67 @@ player.OnPlayerDied?.Invoke();              // not allowed
 - Serialization is the process of transforming and storing data between sessions of an application, and deserialization is the process of taking that stored data so that it can be reconstructed when an application runs again.
 - Unity serializes fields during build time so that it can deserialize the data stored in them while the application is running. The [SerializeField] attribute works to mark private fields as serialized, and serialized fields become available in the Inspector for editing, just like public variables.
 - As you use the Addressables system and API, you'll use serialization to optimize the ways your project consumes assets.
+
+## AssetReference
+
+An AssetReference is a type that references an addressable asset. It is intended to be used as a serializable field in Unity classes like MonoBehaviour or ScriptableObject. When you add an AssetReference to one of these classes, you can assign an address to it in the Inspector with an object picker. The selection is limited to addressable assets.
+
+On the surface, you'll add AssetReferences to your scripts just like you would add direct references, through public fields and private serializable fields. AssetReferences do not store a direct reference to the asset. The AssetReference stores the global unique identifier (GUID) of the asset, which is used by the Addressables system to store the object for retrieval at runtime.
+
+The main benefit of using AssetReference over a string address is that it will restrict the selection of addresses from the Inspector, which avoids problems like typos in string addresses.
+
+## Reference counting
+
+One benefit of the Addressables system is that it helps you manage the loading and unloading of the assets in and out of memory. This is done internally through a reference counting system, which manages the way the resources are shared, but also decides when the resources are actually loaded and unloaded from memory.
+
+## Build content using Addressables
+
+- When you make a build while using the Addressables system, you generate two sets of files:
+    - A player build, which is similar to the application file you would build without using the Addressables system, except that it also contains your local Addressables content.
+    - Addressables content, which includes AssetBundles, runtime settings, a content catalog, and other files that will either be stored locally, with the player build, or uploaded to your content delivery network (CDN) or other hosting services.
+
+- When you build your full application, the default workflow is to build your Addressables content first and then make a player build, but you have some control over this workflow through build scripts.
+
+- You also have some control over the way your project compiles for the Unity Editor's Play mode. Using a Play Mode script, you can either compile your project normally or test your addressable assets, and you can save time by only building Addressables content for Play mode when you need to.
+
+### Play Mode script
+
+- When you're developing your game, you enter Play mode many times to test your changes. The Addressables system builds and uses AssetBundles, which can take time to build, especially in a large project with a lot of addressable assets. This could slow down Play mode iteration and burden your development process.
+
+- A Play Mode script is an Editor-only feature of the Addressables system that allows you to control how the system will deliver assets during Play mode. You can use a Play Mode script to bypass Addressable content builds, allowing you to iterate your work at the quick pace that Play mode allows.
+
+- You'll mainly be using these Play Mode scripts:
+    - Use Asset Database (formerly known as Fast Mode): this option allows you to use Play mode without building Addressables content. It mocks up built Addressables content by locating and loading assets through the Editor asset database.
+    - Use Existing Build: loads assets from AssetBundles created by an earlier build. Before you use this option, you must run a full build to create a set of Addressables content.
+
+- By default, the Play Mode script is set to Use Asset Database for the convenience of development iteration. 
+
+### Default build script
+
+- When you build an application that uses the Addressables system, the general workflow is to build Addressables content as a separate step first before building the Unity Player application so that the application can use the AssetBundles. The Addressables system provides its own standard build scripts for building content, but you can also write your own build script if you need to customize your content build pipeline.
+
+- When you first introduce the Addressables system into your project, it is configured to use the Default Build script. In addition to building the content, the location for where the content files are built depends on several factors such as whether the addressable assets are configured to be local or remote.
+
+- Note: In most cases when you modify a setting (for example, Profile, Groups, the Addressables system settings) and you use the Use Existing Build option, you need to build your Addressables content to apply the changes. Otherwise, you will still see the outdated content in your build.
+
+- You can find the Default Build script in Packages > Addressables > Editor > Build > DataBuilders > BuildScriptPackedMode.cs.
+
+### Play Mode script build cache
+
+- The build cache is the local set of Addressables content that's used when you select Use Existing Build.
+- Select: Build > Clear Build Cache > Content Builders > Default Build Script.
+- You'll see an error message in the Console window again because you destroyed the built content necessary to use an existing build.
+
+### Scriptable Build Pipeline cache
+
+- The Addressables system uses the Scriptable Build Pipeline (SBP) to build AssetBundles. The SBP is more robust than the legacy AssetBundle build pipeline.
+
+- When you build your content, the SBP creates .info files that speed up subsequent builds. The SBP reads data from these .info files instead of regenerating data that hasn't changed. These files are cached in the Library/BuildCache folder of your project.
+
+- To clear the SBP's build cache, follow these instructions:
+    1. On Windows from the main menu, select Edit > Preferences > Scriptable Build Pipeline > Build Cache, and on Mac selecting from the main toolbar Unity > Settings which opens Preferences > Scriptable Build Pipeline > Build Cache.
+    2. Make note of the current cache size.
+    3. Select Purge Cache.
+    4. In the Purge Build Cache dialog pops up, select Yes.
+
+- Note: You can also clear the cache from the Addressables Groups window. First, make sure that you are using the existing build (Play Mode Script dropdown). Then, from the toolbar of the Addressables Groups window, select Build > Clear Build Cache > All from the dropdown.
