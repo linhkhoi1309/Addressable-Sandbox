@@ -993,7 +993,7 @@ One benefit of the Addressables system is that it helps you manage the loading a
 
 - To check out the default profile in the Addressables Profile window, select Window > Asset Management > Addressables > Profiles from the main menu.
 
-- [](References/imgs/image.png)
+- [Profile](References/imgs/Profile.png)
 - In this window, there are five variables, which are as follows:
 
     - Local.BuildPath: the location on your development workstation to store your player build.
@@ -1095,31 +1095,31 @@ There are three group schemas that are packaged with the Addressables system tha
 
 - To view the PacketAssets template, follow these instructions:
 
-1. From the Addressables Groups window, select Tools > Inspect System Settings.
+    1. From the Addressables Groups window, select Tools > Inspect System Settings.
 
-2. In the Inspector window, locate the Asset Group Templates foldout and select Packed Assets in the reorderable list. This will select the Packed Assets asset and refocus the Project window to Packed Assets.
+    2. In the Inspector window, locate the Asset Group Templates foldout and select Packed Assets in the reorderable list. This will select the Packed Assets asset and refocus the Project window to Packed Assets.
 
-3. Select the Packed Assets asset. In the Inspector, note the group template properties appear to be like a group’s, with schemas.
+    3. Select the Packed Assets asset. In the Inspector, note the group template properties appear to be like a group’s, with schemas.
 
 - Note: PackedAssets is defined with two schemas: Content Packing & Loading and Content Update Restrictions.
 
 - To make custom templates for your local and remote groups, follow these instructions:
 
-1. From the Addressables Groups window, select the New dropdown in the toolbar. Note that there is an option labeled Packed Assets.
+    1. From the Addressables Groups window, select the New dropdown in the toolbar. Note that there is an option labeled Packed Assets.
 
-2. In the Project window, navigate to Assets > AddressableAssetsData > AssetGroupTemplates and duplicate the Packed Assets template. Name one “Local Packed Assets” and the other “Remote Packed Assets”.
+    2. In the Project window, navigate to Assets > AddressableAssetsData > AssetGroupTemplates and duplicate the Packed Assets template. Name one “Local Packed Assets” and the other “Remote Packed Assets”.
 
-3. Select the Local Packed Assets file. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Local.
+    3. Select the Local Packed Assets file. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Local.
 
-4. Select the Remote Packed Assets file. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Remote.
+    4. Select the Remote Packed Assets file. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Remote.
 
-5. From the Addressables Groups window, select Tools > Inspect System Settings.
+    5. From the Addressables Groups window, select Tools > Inspect System Settings.
 
-6. In the Inspector window, locate the Asset Group Templates foldout and select the Add (+) button to make sure that Local Packed Assets and the other Remote Packed Assets are listed.
+    6. In the Inspector window, locate the Asset Group Templates foldout and select the Add (+) button to make sure that Local Packed Assets and the other Remote Packed Assets are listed.
 
-7. When your file system browser opens, navigate to Assets > AddressableAssetsData > AssetGroupTemplates to find the asset group templates and add them.
+    7. When your file system browser opens, navigate to Assets > AddressableAssetsData > AssetGroupTemplates to find the asset group templates and add them.
 
-8. From the Addressables Groups window, select the New dropdown in the toolbar. Note that the option for Packed Assets is gone and in its place there are two new options: Local Packed Assets and Remote Packed Assets.
+    8. From the Addressables Groups window, select the New dropdown in the toolbar. Note that the option for Packed Assets is gone and in its place there are two new options: Local Packed Assets and Remote Packed Assets.
 
 - Note: If you change properties or schemas in an asset group template, those settings will only affect the groups created after the change, not the ones created before. Likewise, any changes to a group will not affect the schema it was created from.
 
