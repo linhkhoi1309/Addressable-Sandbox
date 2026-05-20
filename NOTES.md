@@ -1130,3 +1130,30 @@ There are three group schemas that are packaged with the Addressables system tha
     - Pack Separately: Each asset in the group is built into an AssetBundle that contains only that asset. This assumption is broken if you have created implicit asset dependencies.
     - Pack Together By Label: The unique combinations of labels attached to the assets in this group are what form the basis for AssetBundles in this group. 
 - By default, the Addressables system builds with Packed Assets group template, which has its Bundle Mode defaulted to Pack Together. This means that each Addressables group will build to one AssetBundle unless Bundle Mode is configured differently.
+
+## Label 
+
+- In the Addressables system, a label is a way of categorizing one or more addressable assets so that you can easily load them as a set at runtime.
+
+### Label vs Group
+
+While groups and labels are both used to categorize addressable assets, they achieve different goals. 
+
+#### Similaities
+Addresses and labels are treated the same at runtime as locator keys, the concept that is used to locate and retrieve assets. When you write scripts that load assets, rather than request an individual addressable asset by address, you can instead request by a combination of addresses and labels. The Addressables system will retrieve all assets that match the locator keys queried, regardless of which group they were built from, whether in local or remote AssetBundles.
+
+#### Differences
+- Groups are used when you develop in Unity Editor to inform the build scripts how to build AssetBundles, the Addressables content. Once the content is built, groups have no presence in the runtime API. 
+- On the other hand, labels are authored in the Editor to help with loading strategies at runtime.
+
+- When you specify multiple locator keys (addresses and labels), you can specify a merge mode to determine how the sets of assets matching each key are combined:
+    - Union: Include assets that match any key.
+    - Intersection: Include assets that match every key.
+    - UseFirst: Include assets only from the first key that resolves to a valid location.
+
+## Resource Location
+- The Addressables runtime represents all the content using Resource Locations, which define where all the assets can be found. Resource locations are the intermediary between locator keys and assets. So far, we have shown you ways to ask for assets so that they are loaded and ready. But in those load requests this chain of events generally occurs:
+    1. You pass in a locator key or a set of keys.
+    2. All the resource locations associated with the locator keys are found.
+    3. All the assets are loaded from the resource locations.
+- The API provides a way to break this up into two requests - load resource locations from locator keys, and load assets from the resource locations. This allows you to separate finding the items from loading them, which can split the overhead of doing it all at once.
