@@ -983,3 +983,150 @@ One benefit of the Addressables system is that it helps you manage the loading a
     4. In the Purge Build Cache dialog pops up, select Yes.
 
 - Note: You can also clear the cache from the Addressables Groups window. First, make sure that you are using the existing build (Play Mode Script dropdown). Then, from the toolbar of the Addressables Groups window, select Build > Clear Build Cache > All from the dropdown.
+
+## Profile
+
+- Profiles are a configurable data structure with customizable variables that you’ll manage in the Unity Editor without writing scripts. The variables are text that can represent many things, but typically they represent file locations where local and remote Addressables are stored during project development and where the application loads them from.
+
+### Default profile
+- By default, Addressables is configured with a set of variables and a Default profile with values for them. The default profile describes build paths, where content will be stored during each build, and load paths from which content will be loaded during runtime.
+
+- To check out the default profile in the Addressables Profile window, select Window > Asset Management > Addressables > Profiles from the main menu.
+
+- [](References/imgs/image.png)
+- In this window, there are five variables, which are as follows:
+
+    - Local.BuildPath: the location on your development workstation to store your player build.
+    - Local.LoadPath: the location on your target platform from where Addressables content that is packaged with your application is loaded from at runtime.
+    - Remote.BuildPath: the location on your development workstation where Addressables content that is meant to be packaged on a CDN will be written to.
+    - Remote.LoadPath: the location on your target platform where Addressables content is loaded at runtime. This is usually a web address.
+    - BuildTarget: The target platform for the player build. This value changes depending on the target platform you select in Unity Editor's Build Settings.
+
+- This default set of variables is assumed to exist with those exact names so they can be used by the Default Build Script.
+
+### Profile notation
+
+- Addressables Profiles use both square and curly brackets to denote values that come from other profile variables or either static variables in your scripts:
+    - Square Brackets [ ] denote that values of other profile variables should replace everything within the brackets (including the brackets) at the time that the content gets built.
+    - Curly Braces { } denote the values of public static fields from your game scripts should replace everything within the brackets (including the brackets) at time of Addressables’ runtime initialization.
+
+### Profile variables
+
+- The number of variables and their names will be the same across all profiles, but the values of these variables differ allowing you to set up different configurations across profiles.
+
+    1. From the Profiles window, select Create > Variable (All Profiles).
+
+    2. In the dialog, select the Variable Name box and enter "RemoteHost".
+
+    3. In the dialog, select the Default Value box and enter “DEFAULT” and then select the Save button.
+
+- To rename a variable, right-click it in the Profiles window and select Rename Variable (All Profiles).
+
+- To delete a variable, right-click it in the Profiles window and select Delete Variable (All Profiles).
+
+#### Build and Load Path variables
+
+- There is a special type of variable called a Build and Load Path variable (also known as a path pair variable) that is actually two variables in one. Build and Load Path variables are treated as one in the Editor in order to restrict how you can edit them. One variable always represents the build path, and the other represents the load path:
+    - .BuildPath: the location on your development workstation where built content is written to.
+    - .LoadPath: the location on your Player target platform where built content is loaded at runtime.
+- Due to their nature as variables that represent paths, Build and Load Path variables have a location type dropdown in the Profiles window that constrains these variables and values into specific structures for convenience. From this dropdown, you can select the following types:
+    - Built-in: the recommended location where built content that is meant to be packaged with your application.
+    - Editor hosted: the recommended location to use if you are using the Unity Editor as a means of mocking a CDN through private hosting.
+    - Cloud Content Delivery: integrates into Unity Gaming Services’ Cloud content delivery network.
+    - Custom: defined by the developer.
+- When you create a Build and Load Path variable, the location type defaults to Custom. If you choose anything other than Custom, the Addressables system determines what the contents of the path variables are, for consistency.
+
+## Addressables group
+
+- When you make an asset addressable, it always becomes part of an Addressables group. 
+- An Addressables group is the main organizational unit of the Addressables system, and it acts as a container for addressable assets. 
+- During the development of your application, you will assign addressable assets to groups and configure the ways the content will build.
+
+### Addressables group schema
+
+- All Addressables groups are composed of schemas. You can think of schema on an Addressables group as fairly similar to components on a GameObject, in the sense that you maintain a collection of them and can add/remove/configure them in the Inspector. 
+- A schema stores information about how its group will be processed during Addressables content builds.
+
+#### Built-in schemas
+
+There are three group schemas that are packaged with the Addressables system that can be added to an Addressables group.
+
+##### Content Packing & Loading
+
+- This schema is concerned with informing build scripts about how this group’s assets should be turned into Addressables content, and how the application should read the content.
+
+- The primary property of this schema is Build & Load Paths, which informs the build scripts whether the assets in the group should transform into content that is either local or remote. This setting is where the Addressables content build pipeline makes use of the active profile’s path pair variables. The Content Packing & Loading schema also has other properties. We won’t go into the details of each property, but these properties affect your build in the following categories:
+    - How many AssetBundles are built from a group at build time.
+    - How the Addressables system should make web requests when downloading remote content.
+    - How the Addressables system should treat remote content files after downloading to disk.
+    - How the data in the content catalog file is composed.
+    - The backend strategies that the Addressables system uses to fulfill asset loading requests for the assets in this group.
+
+- To change this setting so that this schema is configured to build remote content, follow these instructions:
+
+    1. In the Addressables Groups window, make sure that the active Profile is Developer, which defines the phony URL for Remote.LoadPath.
+
+    2. Make sure that the Play Mode script is set to Use Existing Build so that Play mode will try to load real build content from the phony URL.
+
+    3. Right-click Default Local Group and select Rename. Rename the group to “Default Remote Group”.
+
+    4. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Remote. This will make sure that when the build script builds the Addressables content for this group, it will note that the addressable assets are remote and located at the phony URL. The Path Preview will show you what the values of the Remote path pair resolve to.
+
+    5. In the Groups toolbar, select New Build > Default Build Script to start the build process. If the Addressables Build Report dialog prompts you, decline its usage for now. The Build Report window will be discussed in the Advanced tutorials.
+
+    6. Make sure that the MainMenu scene is active in the Unity Editor and enter Play mode. Note that there are Console window errors and that the logo is not loaded and visible. This is intentional – since you have a real web request and a phony URL, so the Addressables system is failing to connect to download the Addressable assets.
+
+    7. Right-click Default Remote Group and select Rename. Rename the group back to “Default Local Group”.
+
+    8. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Local. This will make sure that when the build script builds content, it will remove the phony web request and make the assets local again for the next build.
+##### Content update restrictions
+- This schema is concerned with how Addressables content should be built if there are previous published versions of Addressables content. 
+- When used, it informs the Addressables system to flag if the assets in a group have changed since the last time you built content. 
+- If you are doing post-release content updates, this can help you determine how the grouping strategy should change to accommodate the updated assets. 
+
+##### Resources and built in scenes
+- This schema informs the build scripts about which types of built-in assets to display in the Built In Data group. 
+
+### Asset group templates
+
+- If an Addressables group is like a GameObject, then an asset group template is like a GameObject prefab. Similar to how a prefab describes the initial shape of a GameObject such as its components and the values of their properties, an asset group template describes the initial shape that the schemas and properties of a new Addressables group takes on.
+
+- The Addressables system comes packaged with one built-in asset group template: Packed Assets.
+
+- To view the PacketAssets template, follow these instructions:
+
+1. From the Addressables Groups window, select Tools > Inspect System Settings.
+
+2. In the Inspector window, locate the Asset Group Templates foldout and select Packed Assets in the reorderable list. This will select the Packed Assets asset and refocus the Project window to Packed Assets.
+
+3. Select the Packed Assets asset. In the Inspector, note the group template properties appear to be like a group’s, with schemas.
+
+- Note: PackedAssets is defined with two schemas: Content Packing & Loading and Content Update Restrictions.
+
+- To make custom templates for your local and remote groups, follow these instructions:
+
+1. From the Addressables Groups window, select the New dropdown in the toolbar. Note that there is an option labeled Packed Assets.
+
+2. In the Project window, navigate to Assets > AddressableAssetsData > AssetGroupTemplates and duplicate the Packed Assets template. Name one “Local Packed Assets” and the other “Remote Packed Assets”.
+
+3. Select the Local Packed Assets file. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Local.
+
+4. Select the Remote Packed Assets file. In the Inspector window, under Content Packing & Loading schema, select the Build & Load Paths property dropdown and select Remote.
+
+5. From the Addressables Groups window, select Tools > Inspect System Settings.
+
+6. In the Inspector window, locate the Asset Group Templates foldout and select the Add (+) button to make sure that Local Packed Assets and the other Remote Packed Assets are listed.
+
+7. When your file system browser opens, navigate to Assets > AddressableAssetsData > AssetGroupTemplates to find the asset group templates and add them.
+
+8. From the Addressables Groups window, select the New dropdown in the toolbar. Note that the option for Packed Assets is gone and in its place there are two new options: Local Packed Assets and Remote Packed Assets.
+
+- Note: If you change properties or schemas in an asset group template, those settings will only affect the groups created after the change, not the ones created before. Likewise, any changes to a group will not affect the schema it was created from.
+
+### How many AssetBundles are built from a group?
+
+- In the Advanced section of Content Packing & Loading, there is another notable property that we will briefly discuss: Bundle Mode. Bundle Mode has three options to choose from:
+    - Pack Together: The group is intended to be built into one asset bundle. The only situation that breaks this assumption is if you want to enable Content Update Restrictions schema to prevent updates.
+    - Pack Separately: Each asset in the group is built into an AssetBundle that contains only that asset. This assumption is broken if you have created implicit asset dependencies.
+    - Pack Together By Label: The unique combinations of labels attached to the assets in this group are what form the basis for AssetBundles in this group. 
+- By default, the Addressables system builds with Packed Assets group template, which has its Bundle Mode defaulted to Pack Together. This means that each Addressables group will build to one AssetBundle unless Bundle Mode is configured differently.
