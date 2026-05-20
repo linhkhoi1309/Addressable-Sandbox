@@ -1157,3 +1157,57 @@ Addresses and labels are treated the same at runtime as locator keys, the concep
     2. All the resource locations associated with the locator keys are found.
     3. All the assets are loaded from the resource locations.
 - The API provides a way to break this up into two requests - load resource locations from locator keys, and load assets from the resource locations. This allows you to separate finding the items from loading them, which can split the overhead of doing it all at once.
+
+## Addressable Hosting
+
+- Building to your chosen platforms and introducing a CDN every time you want to test remote assets can introduce complexities to the development of your project, such as increased time costs. As a solution to these complexities, the Addressables system provides you with the Addressables Hosting window, which acts as a content server integrated into the Unity Editor.
+- Through this feature, the Addressables system hosts the build output the same way that a proper CDN does: it allows you to treat your Unity Editor Play mode session or a Unity Player build as a client that can connect to it in order to retrieve AssetBundles. The clients can exist on the same machine as your project or on any other machine on your local and remote networks.
+- Addressables Hosting lets you improve iteration times when testing your content and provides you with a clear understanding of how your application will connect to a remote server.
+
+- To simulate remote hosting with the local hosting service, let’s restructure Loady Dungeons so that it has remote assets. The Hat assets are a good candidate for this since they are already items that you might get as downloadable content (DLC) or seasonal/event items.
+
+- To set up Loady Dungeons for remote assets, follow these instructions:
+    1. From the main menu, select Window > Asset Management > Addressables > Settings.
+
+    2. In the Inspector window, in the Catalog section, select Build Remote Catalog. This option will enable your build content to create a manifest file in the build output directory named catalog.json that is crucial to finding all the hosted assets. 
+
+    3. In the Groups window, make sure that the Levels and Hats groups have their Build & Load paths property in the Content Packing & Loading schema set to Remote.
+
+- Applying these settings ensures that when the assets build, the application knows that Levels and Hats are remote.
+
+- To set profile Remote path to Editor hosted, follow these instructions:
+    1. Set your target platform to match the client’s platform so that you can build bundles that are compatible with that client. If the client is an Android device, switch to Android. If the client is the Windows Editor in Play mode, switch to Windows Standalone.
+
+    2. From the Profiles window, set your active profile to Default.
+
+    3. In the Default profile, make sure that the Remote path pair’s Bundle Locations dropdown is set to Editor Hosted. This will ensure that when the Addressables content is built, the application builds remote content to the location where the Unity Editor hosts it, and the game will request from the Unity Editor as a mock CDN. Hats and Levels will be retrieved in this manner.
+
+    4. From the main menu, select Edit > Project Settings > Player > Other Settings, and under Configuration, open the Allow downloads over HTTP menu and select Allowed in development builds.
+
+    By default your game is configured to deny web requests that do not use a secure transfer protocol (HTTPS). The Hosting window does not use a secure protocol, and this will make sure that the game can load hosted content while you are developing. The version of the game in Play mode will now connect, and so will Unity Players built in Development mode.
+
+    5. From the Groups window, select Build > New Build > Default Build Script to rebuild your content.
+
+    6. Make sure that the Play Mode script is set to Use Existing Build, so that the game can search for the remote AssetBundles from the host.
+
+    7. Start a local server to host the built remote content:
+
+       ```bash
+       npx http-server ./ServerData -p 9000 --cors
+       ```
+
+    8. Set the remote load path to:
+
+       ```text
+       http://127.0.0.1:9000/[BuildTarget]
+       ```
+
+## AssetBundle cache
+
+- Caching AssetBundles early leads to improved performance on any initial call, such as Addressables.LoadAssetAsync, which would otherwise need to download the bundles as part of their operation.
+
+- Make sure that you are aware of any caching restrictions that might apply to your target platform. For example, while mobile platforms allow you to take advantage of Unity’s AssetBundle Cache for downloaded content, this functionality is disabled by default at the Unity engine level for certain platforms, such as PlayStation 4, Nintendo Switch, and WebGL. Consider updating your base game with the new content on those platforms rather than attempting to deliver remote content from the CDN. Otherwise, you will need to create your own custom AssetBundle caching system and determine whether your solution complies with those platforms’ terms of services.
+
+- For finer control over caching, use the Caching API to manipulate the AssetBundle cache directly.
+
+- Note: You will need to wrap any calls to the Caching API with the ENABLE_CACHING defined.
